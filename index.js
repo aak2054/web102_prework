@@ -29,7 +29,20 @@ const gamesContainer = document.getElementById("games-container");
 function addGamesToPage(games) {
 
     // loop over each item in the data
+    for (let game of games) {
+        let gameCard = document.createElement("div");
+        gameCard.classList.add("game-card");
 
+        gameCard.innerHTML = `
+        <img src="${game.img}" class="game-img" >
+        <h2>${game.name}</h2>
+        <p>${game.description}</p>
+        <p>Backers: ${game.backers}</p>
+        `;
+
+        gamesContainer.appendChild(gameCard);
+    }
+        
 
         // create a new div element, which will become the game card
 
@@ -47,9 +60,10 @@ function addGamesToPage(games) {
 
 }
 
+
 // call the function we just defined using the correct variable
 // later, we'll call this function using a different list of games
-
+addGamesToPage(GAMES_JSON);
 
 /*************************************************************************************
  * Challenge 4: Create the summary statistics at the top of the page displaying the
@@ -61,19 +75,27 @@ function addGamesToPage(games) {
 const contributionsCard = document.getElementById("num-contributions");
 
 // use reduce() to count the number of total contributions by summing the backers
+let totalBackers = GAMES_JSON.reduce((acc, game) => acc + game.backers, 0);
 
 
 // set the inner HTML using a template literal and toLocaleString to get a number with commas
-
+contributionsCard.textContent = `${totalBackers.toLocaleString('en-US')}`;
 
 // grab the amount raised card, then use reduce() to find the total amount raised
 const raisedCard = document.getElementById("total-raised");
 
-// set inner HTML using template literal
+let totalAmountRaised = GAMES_JSON.reduce((acc, game) => acc + game.pledged, 0);
 
+// set inner HTML using template literal
+raisedCard.textContent = `$${totalAmountRaised.toLocaleString('en-US')}`;
 
 // grab number of games card and set its inner HTML
 const gamesCard = document.getElementById("num-games");
+
+let totalGames = GAMES_JSON.length;
+gamesCard.textContent = `${totalGames}`;
+
+
 
 
 /*************************************************************************************
@@ -87,30 +109,34 @@ function filterUnfundedOnly() {
     deleteChildElements(gamesContainer);
 
     // use filter() to get a list of games that have not yet met their goal
-
-
+    const unfundedGames = GAMES_JSON.filter(game => game.pledged < game.goal);
+    console.log(unfundedGames);
     // use the function we previously created to add the unfunded games to the DOM
-
+    addGamesToPage(unfundedGames);
 }
+//filterUnfundedOnly();
 
 // show only games that are fully funded
 function filterFundedOnly() {
     deleteChildElements(gamesContainer);
 
     // use filter() to get a list of games that have met or exceeded their goal
-
-
+    const fundedGames = GAMES_JSON.filter(game => game.pledged >= game.goal);
+    console.log(fundedGames);
     // use the function we previously created to add unfunded games to the DOM
-
+    addGamesToPage(fundedGames);
 }
+//filterFundedOnly();
 
 // show all games
 function showAllGames() {
     deleteChildElements(gamesContainer);
 
     // add all games from the JSON data to the DOM
-
+    const games = GAMES_JSON;
+    addGamesToPage(games);
 }
+//showAllGames();
 
 // select each button in the "Our Games" section
 const unfundedBtn = document.getElementById("unfunded-btn");
@@ -118,6 +144,9 @@ const fundedBtn = document.getElementById("funded-btn");
 const allBtn = document.getElementById("all-btn");
 
 // add event listeners with the correct functions to each button
+unfundedBtn.addEventListener("click", filterUnfundedOnly);
+fundedBtn.addEventListener("click", filterFundedOnly);
+allBtn.addEventListener("click", showAllGames);
 
 
 /*************************************************************************************
@@ -130,11 +159,20 @@ const descriptionContainer = document.getElementById("description-container");
 
 // use filter or reduce to count the number of unfunded games
 
+const fundedGames = GAMES_JSON.filter(game => game.pledged >= game.goal).length;
+let totalRaised = GAMES_JSON.reduce((acc, game) => acc + game.pledged, 0);
+let unfundedGames = GAMES_JSON.length - fundedGames;
 
 // create a string that explains the number of unfunded games using the ternary operator
-
-
+//const unfundedGamesDescription = `There ${numberOfUnfundedGames === 1 ? 'is' : 'are'} ${numberOfUnfundedGames} unfunded game${numberOfUnfundedGames === 1 ? '' : 's'}.`;
+const unfundedGamesDescription = `$${totalRaised.toLocaleString()} has been raised for ${GAMES_JSON.length} games, with ${fundedGames} having met their goal and ${unfundedGames} remaining unfunded.`
 // create a new DOM element containing the template string and append it to the description container
+//descriptionContainer.innerHTML = unfundedGamesDescription;
+const GamesDescription = document.createElement("p");
+GamesDescription.innerHTML = unfundedGamesDescription;
+
+descriptionContainer.appendChild(GamesDescription);
+//descriptionContainer.appendChild(unfundedGamesDescription);
 
 /************************************************************************************
  * Challenge 7: Select & display the top 2 games
@@ -149,7 +187,15 @@ const sortedGames =  GAMES_JSON.sort( (item1, item2) => {
 });
 
 // use destructuring and the spread operator to grab the first and second games
-
+let [firstGame, secondGame, ...others] = sortedGames;
 // create a new element to hold the name of the top pledge game, then append it to the correct element
+const firstGameName = document.createElement("p");
+firstGameName.innerHTML = firstGame.name;
+
+firstGameContainer.appendChild(firstGameName);
 
 // do the same for the runner up item
+const secondGameName = document.createElement("p");
+secondGameName.innerHTML = secondGame.name;
+
+secondGameContainer.appendChild(secondGameName);
